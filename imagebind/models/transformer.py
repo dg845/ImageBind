@@ -108,6 +108,7 @@ class BlockWithMasking(nn.Module):
         dim: int,
         attn_target: Callable,
         mlp_ratio: int = 4,
+        intermediate_size: Optional[int] = None,
         act_layer: Callable = nn.GELU,
         norm_layer: Callable = nn.LayerNorm,
         ffn_dropout_rate: float = 0.0,
@@ -126,7 +127,10 @@ class BlockWithMasking(nn.Module):
         else:
             self.drop_path = nn.Identity()
         self.norm_1 = norm_layer(dim)
-        mlp_hidden_dim = int(mlp_ratio * dim)
+        if intermediate_size is not None:
+            mlp_hidden_dim = intermediate_size
+        else:
+            mlp_hidden_dim = int(mlp_ratio * dim)
         self.mlp = Mlp(
             in_features=dim,
             hidden_features=mlp_hidden_dim,
@@ -186,6 +190,7 @@ class SimpleTransformer(nn.Module):
         drop_path_type: str = "progressive",
         norm_layer: Callable = _LAYER_NORM,
         mlp_ratio: int = 4,
+        intermediate_size: Optional[int] = None,
         ffn_dropout_rate: float = 0.0,
         layer_scale_type: Optional[str] = None,  # from cait; possible values are None, "per_channel", "scalar"
         layer_scale_init_value: float = 1e-4,  # from cait; float
@@ -214,6 +219,7 @@ class SimpleTransformer(nn.Module):
                     dim=embed_dim,
                     attn_target=attn_target,
                     mlp_ratio=mlp_ratio,
+                    intermediate_size=intermediate_size,
                     ffn_dropout_rate=ffn_dropout_rate,
                     drop_path=dpr[i],
                     norm_layer=norm_layer,
